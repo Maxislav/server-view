@@ -1,0 +1,32 @@
+{
+  "name": "server-view",
+  "version": "1.0.0",
+  "description": "server side for view connected cliens",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "node-dev:socket-ws": "node-dev ./dist/socket-ws/index.js",
+    "tsc-be:w": "tsc -w --project tsconfig.json",
+    "start:dev:ws": "concurrently \"npm run tsc-be:w\" \"npm run node-dev:socket-ws\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maxislav/server-view.git"
+  },
+  "dependencies": {
+    "@types/node": "^12.19.14",
+    "@types/ws": "^8.2.0",
+    "concurrently": "^6.4.0",
+    "node-dev": "^3.1.3",
+    "socket.io": "^3.0.0",
+    "ts-lint": "^4.5.1",
+    "typescript": "^4.4.3",
+    "ws": "^8.2.3"
+  },
+  "author": "Maxislav",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Maxislav/server-view/issues"
+  },
+  "homepage": "https://github.com/Maxislav/server-view#readme"
+}

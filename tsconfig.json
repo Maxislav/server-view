@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "rootDir": "./src",
+    "outDir": "dist/",
+    "typeRoots" : ["./typings", "./node_modules/jimp/types"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": [
+      "node"
+    ]
+
+  },
+  "filesGlob": [
+    "./src/types.d.ts",
+    "!./node_modules/**/*.ts"
+  ],
+
+  "exclude": [
+    "webpack.config.ts",
+    "dist",
+    "lib",
+    "@angular",
+    "**/node_modules/*",
+    "./node_modules/*",
+    "node_modules"
+  ]
+}
