@@ -10,34 +10,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyClient = void 0;
-const hash_1 = require("./hash");
+const types_1 = require("./types");
 class MyClient {
     constructor(id, wsClient) {
         this.id = id;
         this.wsClient = wsClient;
         this._cbDisconnected = [];
-        const vehicleId = (0, hash_1.hash)(5);
+        this.nameMap = new Map();
         console.log('connected', id);
         wsClient.on('message', (data) => {
-            console.log(JSON.parse(data.toString()));
+            //console.log('message -> ', JSON.parse(data.toString()));
+            const jsonData = JSON.parse(data.toString());
+            switch (jsonData.action) {
+                case types_1.EAction.CONNECTED: {
+                    console.log('action message connected');
+                    break;
+                }
+                case types_1.EAction.PING: {
+                    console.log('action message ping', data.toString());
+                    break;
+                }
+                case types_1.EAction.MESSAGE: {
+                    console.log('action message message');
+                    break;
+                }
+            }
         });
         wsClient.on('close', (d) => {
             this._cbDisconnected.forEach(cb => {
                 cb(this.id);
             });
         });
-        /* this.intervalId = setInterval(() => {
-             this.send(JSON.stringify({
-                 action: 'MESSAGE',
-                 data: {
-                     name: 'vehicleMove',
-                     data: {
-                         vehicleId: vehicleId,
-                         lngLat: [50, 30],
-                     },
-                 },
-             }));
-         }, 10000)*/
+    }
+    get$(name, cb) {
+        this.nameMap.set(name, cb);
     }
     send(data) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -61,8 +67,9 @@ class MyClient {
         };
     }
     close() {
-        clearInterval(this.intervalId);
+        clearInterval(this._intervalId);
     }
 }
 exports.MyClient = MyClient;
+MyClient.listenerHashMap = {};
 //# sourceMappingURL=client.js.map

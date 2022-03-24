@@ -1,9 +1,17 @@
-import WebSocket from 'ws'
+import WebSocket, { ServerOptions } from 'ws'
 import { MyClient } from './client';
 import { hash } from './hash';
 
 const PORT = 3001;
-const wsServer = new WebSocket.Server({ port: PORT }, () => {
+
+class AppServer extends WebSocket.Server {
+
+    constructor(options?: ServerOptions, cb?: () => void) {
+        super(options, cb);
+    }
+}
+
+const wsServer = new AppServer({ port: PORT }, () => {
     console.log(`ws server started on port: ${PORT}`)
 });
 

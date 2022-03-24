@@ -16,7 +16,12 @@ const ws_1 = __importDefault(require("ws"));
 const client_1 = require("./client");
 const hash_1 = require("./hash");
 const PORT = 3001;
-const wsServer = new ws_1.default.Server({ port: PORT }, () => {
+class AppServer extends ws_1.default.Server {
+    constructor(options, cb) {
+        super(options, cb);
+    }
+}
+const wsServer = new AppServer({ port: PORT }, () => {
     console.log(`ws server started on port: ${PORT}`);
 });
 const CLIENT_MAP = {};
