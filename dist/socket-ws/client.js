@@ -31,7 +31,7 @@ class MyClient {
                     break;
                 }
                 case types_1.EAction.MESSAGE: {
-                    console.log('action message message');
+                    console.log('action message message', data.toString());
                     break;
                 }
             }

@@ -26,7 +26,7 @@ const wsServer = new AppServer({ port: PORT }, () => {
 });
 const CLIENT_MAP = {};
 wsServer.on('connection', (wsClient) => {
-    const client = new client_1.MyClient((0, hash_1.hash)(40), wsClient);
+    const client = new client_1.MyClient((0, hash_1.hash)(140), wsClient);
     CLIENT_MAP[client.id] = client;
     console.log('connection length: ' + Object.keys(CLIENT_MAP).length);
     let interval = setInterval(() => __awaiter(void 0, void 0, void 0, function* () {

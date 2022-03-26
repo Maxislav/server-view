@@ -21,7 +21,7 @@ const CLIENT_MAP: {
 
 
 wsServer.on('connection', (wsClient: WebSocket) => {
-    const client = new MyClient(hash(40), wsClient);
+    const client = new MyClient(hash(140), wsClient);
     CLIENT_MAP[client.id] = client;
     console.log('connection length: ' + Object.keys(CLIENT_MAP).length);
 

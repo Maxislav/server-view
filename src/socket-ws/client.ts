@@ -31,7 +31,7 @@ export class MyClient {
                     break
                 }
                 case EAction.MESSAGE: {
-                    console.log('action message message')
+                    console.log('action message message', data.toString())
                     break
                 }
             }
