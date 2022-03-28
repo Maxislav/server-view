@@ -1,6 +1,7 @@
 import WebSocket, { ServerOptions } from 'ws'
 import { MyClient } from './client';
 import { hash } from './hash';
+import { EAction, IData } from './types';
 
 const PORT = 3001;
 
@@ -15,37 +16,16 @@ const wsServer = new AppServer({ port: PORT }, () => {
     console.log(`ws server started on port: ${PORT}`)
 });
 
-const CLIENT_MAP: {
-    [id: string]: MyClient;
-} = {};
-
+const CLIENTS: Map<string, MyClient> = new Map();
 
 wsServer.on('connection', (wsClient: WebSocket) => {
-    const client = new MyClient(hash(140), wsClient);
-    CLIENT_MAP[client.id] = client;
-    console.log('connection length: ' + Object.keys(CLIENT_MAP).length);
-
-    let interval = setInterval(async () => {
-        const s = await client.send(JSON.stringify({
-            action: 'PING',
-            data: hash(2),
-            clientId: client.id,
-        }));
-        if (!s) {
-            clearInterval(interval);
-            client.close();
-            console.log(`client with id ${client.id} Err connect`);
-
-            delete CLIENT_MAP[client.id];
-            console.log('connection length: ' + Object.keys(CLIENT_MAP).length)
-        }
-    }, 5000);
-
-    client.onDisconnected((id) => {
-        console.log(`client with id ${id} Disconnected`);
-        clearInterval(interval);
-        delete CLIENT_MAP[id];
-        console.log('connection length: ' + Object.keys(CLIENT_MAP).length)
-    })
-
+    const clientId = hash(140)
+    const client = new MyClient(clientId, wsClient);
+    CLIENTS.set(clientId, client);
+    console.log('connected', 'connection length', CLIENTS.size)
+    client.onDestroy$
+        .subscribe((id) => {
+            console.log(`client with id ${(client.id).slice(0, 5)}... Err connect`);
+            CLIENTS.delete(id)
+        })
 });

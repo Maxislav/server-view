@@ -1,25 +1,40 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyClient = void 0;
 const types_1 = require("./types");
+const rxjs_1 = require("rxjs");
+const hash_1 = require("./hash");
 class MyClient {
     constructor(id, wsClient) {
         this.id = id;
         this.wsClient = wsClient;
         this._cbDisconnected = [];
-        this.nameMap = new Map();
-        console.log('connected', id);
-        wsClient.on('message', (data) => {
-            //console.log('message -> ', JSON.parse(data.toString()));
+        this.pathMap = new Map();
+        this.onDestroy$ = new rxjs_1.Subject();
+        console.log(`connected id: ${(id).slice(0, 5)}...`);
+        Object.setPrototypeOf(this.constructor.prototype, wsClient);
+        this.on = wsClient.on.bind(wsClient);
+        this.send = wsClient.send.bind(wsClient);
+        (0, rxjs_1.interval)(5000)
+            .pipe((0, rxjs_1.takeUntil)(this.onDestroy$), (0, rxjs_1.switchMap)(() => {
+            const d = {
+                action: types_1.EAction.PING,
+                data: {
+                    path: '',
+                    hash: (0, hash_1.hash)(2),
+                    message: this.id
+                },
+            };
+            return this.send$(d);
+        }), (0, rxjs_1.catchError)(() => {
+            this.onDestroy();
+            return this.onDestroy$;
+        }))
+            .subscribe();
+        this.on('close', () => {
+            this.onDestroy();
+        });
+        this.on('message', (data) => {
             const jsonData = JSON.parse(data.toString());
             switch (jsonData.action) {
                 case types_1.EAction.CONNECTED: {
@@ -32,42 +47,47 @@ class MyClient {
                 }
                 case types_1.EAction.MESSAGE: {
                     console.log('action message message', data.toString());
+                    const m = JSON.parse(data.toString());
+                    const path = m.data.path;
+                    const cb = this.pathMap.get(path);
+                    cb === null || cb === void 0 ? void 0 : cb(m);
                     break;
                 }
             }
         });
-        wsClient.on('close', (d) => {
-            this._cbDisconnected.forEach(cb => {
-                cb(this.id);
-            });
+        this.on('close', (d) => {
+            this.wsClose();
+        });
+        this.get$('get-local-id', () => {
         });
     }
-    get$(name, cb) {
-        this.nameMap.set(name, cb);
-    }
-    send(data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                this.wsClient.send(data, (err) => {
-                    if (err) {
-                        resolve(false);
-                    }
-                    else {
-                        resolve(true);
-                    }
-                });
-            });
-        });
-    }
-    onDisconnected(cb) {
-        this._cbDisconnected.push(cb);
-        return () => {
-            const i = this._cbDisconnected.indexOf(cb);
-            this._cbDisconnected.splice(i, 1);
+    get$(name, cc) {
+        const cb = (m) => {
+            const h = m.data.hash;
         };
+        this.pathMap.set(name, cb);
+        return new rxjs_1.Observable((subscriber) => {
+        });
     }
-    close() {
-        clearInterval(this._intervalId);
+    send$(data) {
+        return new rxjs_1.Observable((subscriber) => {
+            this.send(JSON.stringify(data), (err) => {
+                if (err) {
+                    subscriber.error(err);
+                }
+                else {
+                    subscriber.next(true);
+                    subscriber.complete();
+                }
+            });
+        });
+    }
+    wsClose() {
+        this.onDestroy();
+    }
+    onDestroy() {
+        this.onDestroy$.next(this.id);
+        this.onDestroy$.complete();
     }
 }
 exports.MyClient = MyClient;
